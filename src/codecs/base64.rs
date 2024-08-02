@@ -1,7 +1,7 @@
 use base64::{engine::general_purpose, Engine};
 use clap::{Arg, Command};
 
-use crate::common::{Codec, WithCommand};
+use crate::common::{get_input, Codec, WithCommand};
 
 pub struct Base64Codec {}
 
@@ -27,28 +27,25 @@ impl WithCommand for Base64Codec {
                 Command::new("encode")
                     .alias("e")
                     .about("base64 encode")
-                    .arg(Arg::new("input").required(true).help("input to encode")),
+                    .arg(Arg::new("input").help("input to encode")),
             )
             .subcommand(
                 Command::new("decode")
                     .about("base64 decode")
                     .alias("d")
-                    .arg(
-                        Arg::new("input")
-                            .required(true)
-                            .help("input to decode")
-                            .index(1),
-                    ),
+                    .arg(Arg::new("input").help("input to decode")),
             )
     }
 
     fn process(matches: &clap::ArgMatches) -> Result<(), String> {
         let result = match matches.subcommand() {
             Some(("encode", sub_matches)) => {
-                Base64Codec::encode(sub_matches.get_one::<String>("input").unwrap())
+                let input = get_input(sub_matches.get_one::<String>("input")).unwrap();
+                Base64Codec::encode(&input)
             }
             Some(("decode", sub_matches)) => {
-                Base64Codec::decode(sub_matches.get_one::<String>("input").unwrap())
+                let input = get_input(sub_matches.get_one::<String>("input")).unwrap();
+                Base64Codec::decode(&input)
             }
             _ => Err("Invalid subcommand".to_string()),
         };

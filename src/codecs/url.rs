@@ -1,7 +1,7 @@
 use clap::{Arg, Command};
 use percent_encoding::{percent_decode, utf8_percent_encode, NON_ALPHANUMERIC};
 
-use crate::common::{Codec, WithCommand};
+use crate::common::{get_input, Codec, WithCommand};
 
 pub struct UrlCodec {}
 
@@ -27,25 +27,25 @@ impl WithCommand for UrlCodec {
                 Command::new("encode")
                     .alias("e")
                     .about("url encode")
-                    .arg(Arg::new("input").required(true).help("input to encode")),
+                    .arg(Arg::new("input").help("input to encode")),
             )
             .subcommand(
-                Command::new("decode").about("url decode").alias("d").arg(
-                    Arg::new("input")
-                        .required(true)
-                        .help("input to decode")
-                        .index(1),
-                ),
+                Command::new("decode")
+                    .about("url decode")
+                    .alias("d")
+                    .arg(Arg::new("input").help("input to decode")),
             )
     }
 
     fn process(matches: &clap::ArgMatches) -> Result<(), String> {
         let result = match matches.subcommand() {
             Some(("encode", sub_matches)) => {
-                UrlCodec::encode(sub_matches.get_one::<String>("input").unwrap())
+                let input = get_input(sub_matches.get_one::<String>("input")).unwrap();
+                UrlCodec::encode(&input)
             }
             Some(("decode", sub_matches)) => {
-                UrlCodec::decode(sub_matches.get_one::<String>("input").unwrap())
+                let input = get_input(sub_matches.get_one::<String>("input")).unwrap();
+                UrlCodec::decode(&input)
             }
             _ => Err("Invalid subcommand".to_string()),
         };
